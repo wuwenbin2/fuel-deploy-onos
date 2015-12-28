@@ -1,0 +1,42 @@
+Namespace(cleanup=False, cleanup_only=True, dea_file='/home/onos/fuel/deploy/dea.yaml', dha_file='templates/virtual_environment/conf/dha.yaml', fuel_only=False, fuel_plugins_conf_dir=None, fuel_plugins_dir=None, iso_file='/home/onos/fuel/deploy/OPNFV.iso', no_fuel=False, no_health_check=False, no_plugins=False, pxe_bridge='pxebr', storage_dir='/home/onos/fuel/deploy/images')
+
+Deleting VM controller1 with disks ['/home/onos/fuel/deploy/images/controller1.raw']
+
+Deleting file /home/onos/fuel/deploy/images/controller1.raw
+
+Deleting VM controller2 with disks ['/home/onos/fuel/deploy/images/controller2.raw']
+
+Deleting file /home/onos/fuel/deploy/images/controller2.raw
+
+Deleting VM controller3 with disks ['/home/onos/fuel/deploy/images/controller3.raw']
+
+Deleting file /home/onos/fuel/deploy/images/controller3.raw
+
+Deleting VM compute1 with disks ['/home/onos/fuel/deploy/images/compute1.raw']
+
+Deleting file /home/onos/fuel/deploy/images/compute1.raw
+
+Deleting VM compute2 with disks ['/home/onos/fuel/deploy/images/compute2.raw']
+
+Deleting file /home/onos/fuel/deploy/images/compute2.raw
+
+Deleting VM compute3 with disks ['/home/onos/fuel/deploy/images/compute3.raw']
+
+Deleting file /home/onos/fuel/deploy/images/compute3.raw
+
+Deleting VM onos with disks ['/home/onos/fuel/deploy/images/onos.raw']
+
+Deleting file /home/onos/fuel/deploy/images/onos.raw
+
+Deleting VM fuel-master with disks ['/home/onos/fuel/deploy/images/fuel-master.raw']
+
+Deleting file /home/onos/fuel/deploy/images/fuel-master.raw
+
+Deleting network fuel3
+
+Deleting network fuel2
+
+Deleting network fuel1
+
+Deleting network fuel4
+
