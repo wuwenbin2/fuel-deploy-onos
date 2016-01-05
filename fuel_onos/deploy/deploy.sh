@@ -15,6 +15,7 @@ PLUGINS="$DIR/plugins"
 export TMPDIR=$DIR/images
 [[ -d $TMPDIR ]] || mkdir -p $TMPDIR
 
+[[ -d $PLUGINS ]] || mkdir -p $PLUGINS
 # change permissions down to TMPDIR
 chmod a+x $TMPDIR
 
