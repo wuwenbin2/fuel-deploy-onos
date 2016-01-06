@@ -2,9 +2,9 @@ title: Deployment Environment Adapter (DEA)
 # DEA API version supported
 version:
 created:
-comment: Config for LF POD2 - HA deployment with Ceph
+comment: Config for Virtual Environment - HA deployment with Ceph
 environment:
-  name: opnfv
+  name: opnfv_virt
   mode: ha
   net_segment_type: tun
 wanted_release: Kilo on Ubuntu 14.04
@@ -12,7 +12,7 @@ nodes:
 - id: 1
   interfaces: interfaces_1
   transformations: transformations_1
-  role: ceph-osd,controller
+  role: ceph-osd,controller,onos
 - id: 2
   interfaces: interfaces_1
   transformations: transformations_1
@@ -29,6 +29,10 @@ nodes:
   interfaces: interfaces_1
   transformations: transformations_2
   role: ceph-osd,compute
+- id: 6
+  interfaces: interfaces_1
+  transformations: transformations_2
+  role: ceph-osd,compute
 fuel:
   ADMIN_NETWORK:
     cidr: 10.20.0.0/24
@@ -37,23 +41,25 @@ fuel:
     dhcp_pool_start: 10.20.0.3
     ipaddress: 10.20.0.2
     netmask: 255.255.0.0
-  DNS_DOMAIN: domain.tld
-  DNS_SEARCH: domain.tld
-  DNS_UPSTREAM: 8.8.8.8
+  DNS_DOMAIN: opnfvericsson.ca
+  DNS_SEARCH: opnfvericsson.ca
+  DNS_UPSTREAM: 10.118.32.193
   FUEL_ACCESS:
     password: admin
     user: admin
-  HOSTNAME: opnfv
-  NTP1: 0.pool.ntp.org
-  NTP2: 1.pool.ntp.org
-  NTP3: 2.pool.ntp.org
+  HOSTNAME: opnfv_virt
+  NTP1: 10.118.32.193
+  NTP2: 10.118.34.193
+  NTP3: null
 interfaces_1:
   eth0:
   - fuelweb_admin
   - management
+  eth1:
   - storage
-  - private
   eth2:
+  - private
+  eth3:
   - public
 transformations_1:
   transformations:
@@ -81,16 +87,16 @@ transformations_1:
     name: eth0
   - action: add-port
     bridge: br-mgmt
-    name: eth0.300
+    name: eth0.101
   - action: add-port
     bridge: br-storage
-    name: eth0.301
+    name: eth1.102
   - action: add-port
     bridge: br-mesh
-    name: eth0.302
+    name: eth2.103
   - action: add-port
     bridge: br-ex
-    name: eth2
+    name: eth3
 transformations_2:
   transformations:
   - action: add-br
@@ -106,25 +112,24 @@ transformations_2:
     name: eth0
   - action: add-port
     bridge: br-mgmt
-    name: eth0.300
+    name: eth0.101
   - action: add-port
     bridge: br-storage
-    name: eth0.301
+    name: eth1.102
   - action: add-port
     bridge: br-mesh
-    name: eth0.302
+    name: eth2.103
 network:
-  management_vip: 192.168.1.2
-  management_vrouter_vip: 192.168.1.1
+  management_vip: 192.168.0.2
+  management_vrouter_vip: 192.168.0.1
   networking_parameters:
     base_mac: fa:16:3e:00:00:00
     configuration_template: null
     dns_nameservers:
-    - 8.8.4.4
-    - 8.8.8.8
+    - 10.118.32.193
     floating_ranges:
-    - - 172.30.10.160
-      - 172.30.10.254
+    - - 172.16.0.130
+      - 172.16.0.254
     gre_id_range:
     - 2
     - 65535
@@ -136,11 +141,11 @@ network:
     - 1000
     - 1030
   networks:
-  - cidr: 172.30.10.0/24
-    gateway: 172.30.10.1
+  - cidr: 172.16.0.0/24
+    gateway: 172.16.0.1
     ip_ranges:
-    - - 172.30.10.64
-      - 172.30.10.159
+    - - 172.16.0.2
+      - 172.16.0.126
     meta:
       cidr: 172.16.0.0/24
       configurable: true
@@ -160,13 +165,13 @@ network:
       vlan_start: null
     name: public
     vlan_start: null
-  - cidr: 192.168.1.0/24
+  - cidr: 192.168.0.0/24
     gateway: null
     ip_ranges:
-    - - 192.168.1.1
-      - 192.168.1.254
+    - - 192.168.0.1
+      - 192.168.0.254
     meta:
-      cidr: 192.168.1.0/24
+      cidr: 192.168.0.0/24
       configurable: true
       map_priority: 2
       name: management
@@ -179,14 +184,14 @@ network:
       - vrouter
       vlan_start: 101
     name: management
-    vlan_start: 300
-  - cidr: 192.168.0.0/24
+    vlan_start: 101
+  - cidr: 192.168.1.0/24
     gateway: null
     ip_ranges:
-    - - 192.168.0.1
-      - 192.168.0.254
+    - - 192.168.1.1
+      - 192.168.1.254
     meta:
-      cidr: 192.168.0.0/24
+      cidr: 192.168.1.0/24
       configurable: true
       map_priority: 2
       name: storage
@@ -196,7 +201,7 @@ network:
       use_gateway: false
       vlan_start: 102
     name: storage
-    vlan_start: 301
+    vlan_start: 102
   - cidr: 192.168.2.0/24
     gateway: null
     ip_ranges:
@@ -214,7 +219,7 @@ network:
       use_gateway: false
       vlan_start: 103
     name: private
-    vlan_start: 302
+    vlan_start: 103
   - cidr: 10.20.0.0/16
     gateway: 10.20.0.2
     ip_ranges:
@@ -230,32 +235,32 @@ network:
       use_gateway: true
     name: fuelweb_admin
     vlan_start: null
-  public_vip: 172.30.10.64
-  public_vrouter_vip: 172.30.10.65
+  public_vip: 172.16.0.3
+  public_vrouter_vip: 172.16.0.2
   vips:
     management:
-      ipaddr: 192.168.1.2
+      ipaddr: 192.168.0.2
       namespace: haproxy
       network_role: mgmt/vip
       node_roles:
       - controller
       - primary-controller
     public:
-      ipaddr: 172.30.10.64
+      ipaddr: 172.16.0.3
       namespace: haproxy
       network_role: public/vip
       node_roles:
       - controller
       - primary-controller
     vrouter:
-      ipaddr: 192.168.1.1
+      ipaddr: 192.168.0.1
       namespace: vrouter
       network_role: mgmt/vip
       node_roles:
       - controller
       - primary-controller
     vrouter_pub:
-      ipaddr: 172.30.10.65
+      ipaddr: 172.16.0.2
       namespace: vrouter
       network_role: public/vip
       node_roles:
@@ -452,7 +457,7 @@ settings:
           error: Invalid IP address list
           source: ^\*$|^(?:\d|1?\d\d|2[0-4]\d|25[0-5])(?:\.(?:\d|1?\d\d|2[0-4]\d|25[0-5])){3}(?:\s*,\s*(?:\d|1?\d\d|2[0-4]\d|25[0-5])(?:\.(?:\d|1?\d\d|2[0-4]\d|25[0-5])){3})*$
         type: text
-        value: 8.8.8.8, 8.8.4.4
+        value: 10.118.32.193
         weight: 10
       metadata:
         label: Host OS DNS Servers
@@ -519,7 +524,7 @@ settings:
           error: Invalid NTP server list
           source: ^\s*(?:(?:\w+(?:-+\w+)*\.)+[a-z]+|\d{1,3}(?:\.\d{1,3}){3})\s*(?:,\s*(?:(?:\w+(?:-+\w+)*\.)+[a-z]+|\d{1,3}(\.\d{1,3}){3})\s*)*$
         type: text
-        value: 0.pool.ntp.org, 1.pool.ntp.org, 2.pool.ntp.org
+        value: 10.118.32.193, 10.118.34.193
         weight: 10
     kernel_params:
       kernel:
@@ -614,6 +619,23 @@ settings:
         type: text
         value: '16'
         weight: 70
+    onos:
+      metadata:
+        enabled: true
+        label: onos plugin
+        plugin_id: 3
+        restrictions:
+        - cluster:net_provider != 'neutron': Neutron only
+        toggleable: true
+        weight: 70
+      public_eth:
+        description: Please note that onos needs an independent eth for public network
+          when interfaces of nodes are configured, or L3 traffic to internet will fail!
+          Defualt is eth3.
+        label: Public Ethernet Port
+        type: text
+        value: eth3
+        weight: 20
     provision:
       metadata:
         label: Provision
@@ -716,22 +738,22 @@ settings:
         value:
         - name: ubuntu
           priority: null
-          section: main universe multiverse
+          section: main
           suite: trusty
           type: deb
-          uri: http://archive.ubuntu.com/ubuntu/
+          uri: http://10.20.0.2:8080/ubuntu-part
         - name: ubuntu-updates
           priority: null
-          section: main universe multiverse
-          suite: trusty-updates
+          section: main
+          suite: trusty
           type: deb
-          uri: http://archive.ubuntu.com/ubuntu/
+          uri: http://10.20.0.2:8080/ubuntu-part
         - name: ubuntu-security
           priority: null
-          section: main universe multiverse
-          suite: trusty-security
+          section: main
+          suite: trusty
           type: deb
-          uri: http://archive.ubuntu.com/ubuntu/
+          uri: http://10.20.0.2:8080/ubuntu-part
         - name: mos
           priority: 1050
           section: main restricted
@@ -743,19 +765,19 @@ settings:
           section: main restricted
           suite: mos7.0-updates
           type: deb
-          uri: http://mirror.fuel-infra.org/mos-repos/ubuntu/7.0/
+          uri: http://10.20.0.2:8080/mos-ubuntu
         - name: mos-security
           priority: 1050
           section: main restricted
           suite: mos7.0-security
           type: deb
-          uri: http://mirror.fuel-infra.org/mos-repos/ubuntu/7.0/
+          uri: http://10.20.0.2:8080/mos-ubuntu
         - name: mos-holdback
           priority: 1100
           section: main restricted
           suite: mos7.0-holdback
           type: deb
-          uri: http://mirror.fuel-infra.org/mos-repos/ubuntu/7.0/
+          uri: http://10.20.0.2:8080/mos-ubuntu
         - name: Auxiliary
           priority: 1150
           section: main restricted
