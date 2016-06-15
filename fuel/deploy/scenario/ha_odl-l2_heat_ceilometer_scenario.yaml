@@ -1,0 +1,230 @@
+##############################################################################
+# Copyright (c) 2015 Ericsson AB and others.
+# jonas.bjurel@ericsson.com
+# All rights reserved. This program and the accompanying materials
+# are made available under the terms of the Apache License, Version 2.0
+# which accompanies this distribution, and is available at
+# http://www.apache.org/licenses/LICENSE-2.0
+##############################################################################
+
+############################################################################### # Description:
+# This .yaml configuration file defines the configuration of the fuel
+# deployment and is passed as an argument to deploy.sh
+# eg. deploy.sh -c https://artifact.opnfv.org/fuel/config
+# This will make build.sh fetch this configuration file and configure the
+# deployment accordingly.
+# After the deployment, a copy of this file gets uploaded to fuel:
+# /root/deploy-config.yaml, as well as the sha-1 sum of this file:
+# /root/deploy-config.sha1
+##############################################################################
+
+##############################################################################
+# deployment configuration meta-data
+deployment-scenario-metadata:
+   title: ODL-L2 HA deployment
+   version: 0.0.4
+   created: Jun 02 2016
+   comment: Rebased to Fuel9
+
+##############################################################################
+# Stack extentions are opnfv added value features in form of a fuel-plugin
+# plug-ins listed below will be enabled and configured according to the
+# <module-config-base-uri>/<module-config-name>_<module-config-version>.yaml
+# It does so by copying the config file to the local plugin config directory
+stack-extensions:
+# Note that the module substitionion does not support arrays
+# This is a quick fix
+#   - module: opendaylight
+#     module-config-name: fuel-odl
+#     module-config-version: 0.0.2
+#     module-config-override:
+       # Module config overrides
+#       rest_api_port:
+#         value: '8282'
+#       enable_gbp:
+#         value: false
+#       enable_l3_odl:
+#         value: false
+#       enable_sfc:
+#         value: false
+
+##############################################################################
+# By editing the override-config sections below, you can override arbitrary
+# configuration name-space settings
+dea-override-config:
+  nodes:
+  - id: 1
+    interfaces: interfaces_1
+    role: controller,opendaylight
+    transformations: transformations_1
+  - id: 2
+    interfaces: interfaces_1
+    role: mongo,controller
+    transformations: transformations_1
+  - id: 3
+    interfaces: interfaces_1
+    role: ceph-osd,controller
+    transformations: transformations_1
+  - id: 4
+    interfaces: interfaces_1
+    role: ceph-osd,compute
+    transformations: transformations_1
+  - id: 5
+    interfaces: interfaces_1
+    role: ceph-osd,compute
+    transformations: transformations_1
+  settings:
+    editable:
+      opendaylight:
+        metadata:
+          # chosen_id: Assigned during installation
+          class: plugin
+          default: false
+          enabled: true
+          label: OpenDaylight plugin
+          toggleable: true
+          versions:
+          - bgpvpn_gateway:
+              description: Define the default gateway for BGPVPN
+              label: Default Gateway
+              regex:
+                error: Invalid ip number
+                source: ^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$
+              restrictions:
+              - settings:opendaylight.enable_bgpvpn.value == false: Only needed if BGPVPN
+                  is enabled.
+              type: text
+              value: 0.0.0.0
+              weight: 16
+            enable_bgpvpn:
+              description: 'This enables the bgpvpn extension of neutron togethere with
+                the corresponding sdnvpn features in odl. This feature will disable the
+                standart ovsdb feature from ODL.
+
+                '
+              label: BGPVPN extensions
+              type: checkbox
+              value: false
+              weight: 15
+            enable_l3_odl:
+              label: Use ODL to manage L3 traffic
+              restrictions:
+              - networking_parameters:segmentation_type == 'vlan': Use tunneling segmentation
+                  type.
+              - settings:public_network_assignment.assign_to_all_nodes.value == false: Assign
+                  public network to all nodes
+              type: checkbox
+              value: false
+              weight: 12
+            enable_sfc:
+              label: SFC features
+              type: checkbox
+              value: false
+              weight: 13
+            metadata:
+              default_credentials:
+                password: admin
+                user: admin
+              hot_pluggable: false
+              jetty_port: 8181
+              odl_features:
+                cluster:
+                - odl-jolokia
+                default:
+                - config
+                - standard
+                - region
+                - package
+                - kar
+                - ssh
+                - management
+                gcr:
+                - odl-groupbasedpolicy-ovssfc
+                ncr:
+                - odl-ovsdb-sfc
+                - odl-ovsdb-sfc-rest
+                odl-default:
+                - odl-restconf-all
+                - odl-aaa-authn
+                - odl-dlux-all
+                ovs:
+                - odl-ovsdb-openstack
+                sfc:
+                - odl-sfc-model
+                - odl-sfc-provider
+                - odl-sfc-provider-rest
+                - odl-sfc-sb-rest
+                - odl-sfc-ui
+                - odl-sfc-netconf
+                - odl-sfc-ovs
+                - odl-sfcofl2
+                vpn:
+                - odl-vpnservice-openstack
+              # plugin_id: Assigned during installation
+              plugin_version: 0.9.0
+              restrictions:
+              - cluster:net_provider != 'neutron': Only neutron is supported by OpenDaylight
+            odl_v2:
+              description: V2 version is considered as experimental
+              label: Use V2 ML2 driver
+              type: checkbox
+              value: false
+              weight: 17
+            rest_api_port:
+              description: Port on which ODL REST API will be available.
+              label: Port number
+              regex:
+                error: Invalid port number
+                source: ^([1-9][0-9]{0,3}|[1-5][0-9]{4}|6[0-4][0-9]{3}|65[0-4][0-9]{2}|655[0-2][0-9]|6553[0-5])$
+              type: text
+              value: '8282'
+              weight: 40
+            sfc_class:
+              description: 'Classifier determines what traffic needs to be chained based
+                on policy based on yang model. The OpenDayLight actually supports the
+                OVSDB NetVirt and the GBP classifier in case of SFC.
+
+                '
+              label: Classifier used by SFC
+              restrictions:
+              - action: hide
+                condition: settings:opendaylight.enable_sfc.value == false
+              type: select
+              value: ncr
+              values:
+              - data: ncr
+                label: NetVirt
+              - data: gcr
+                label: GBP
+              weight: 14
+          weight: 70
+
+dha-override-config:
+  nodes:
+  - id: 1
+    libvirtName: controller1
+    libvirtTemplate: templates/virtual_environment/vms/controller.xml
+  - id: 2
+    libvirtName: controller2
+    libvirtTemplate: templates/virtual_environment/vms/controller.xml
+  - id: 3
+    libvirtName: controller3
+    libvirtTemplate: templates/virtual_environment/vms/controller.xml
+  - id: 4
+    libvirtName: compute1
+    libvirtTemplate: templates/virtual_environment/vms/compute.xml
+  - id: 5
+    libvirtName: compute2
+    libvirtTemplate: templates/virtual_environment/vms/compute.xml
+  - id: 6
+    libvirtName: fuel-master
+    libvirtTemplate: templates/virtual_environment/vms/fuel.xml
+    isFuel: yes
+    username: root
+    password: r00tme
+
+##############################################################################
+# The verification pipeline may populate the section below with arbitrary
+# testing information, which post deploy can be retreived from the fuel master:
+# /root/deploy-config.yaml
+test:
